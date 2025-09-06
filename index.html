@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student CGPA Calculator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="company-logo">
+                <svg class="logo-icon" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="50" cy="50" r="45" fill="white" stroke="#ff4500" stroke-width="3"/>
+                    <path d="M30 35h40v30H30z" fill="#ff4500"/>
+                    <circle cx="50" cy="50" r="8" fill="white"/>
+                    <path d="M42 42l16 16M58 42L42 58" stroke="white" stroke-width="2"/>
+                </svg>
+                <div>
+                    <div class="company-name">Nexora EduTech</div>
+                    <div style="font-size: 0.9rem; opacity: 0.8;">Academic Excellence Platform</div>
+                </div>
+            </div>
+            <h1>🎓 CGPA Calculator</h1>
+            <p>Track your academic progress and make informed decisions about your courses</p>
+        </div>
+
+        <div class="main-content">
+            <div class="course-input-section">
+                <h2>Add Course</h2>
+                <div class="input-group">
+                    <label for="courseName">Course Name</label>
+                    <input type="text" id="courseName" placeholder="e.g., Mathematics 101">
+                </div>
+                
+                <div class="input-group">
+                    <label for="creditHours">Credit Hours</label>
+                    <input type="number" id="creditHours" min="1" max="6" placeholder="e.g., 3">
+                </div>
+                
+                <div class="input-group">
+                    <label for="grade">Grade</label>
+                    <select id="grade">
+                        <option value="">Select Grade</option>
+                        <option value="4.0">A (4.0)</option>
+                        <option value="3.7">A- (3.7)</option>
+                        <option value="3.3">B+ (3.3)</option>
+                        <option value="3.0">B (3.0)</option>
+                        <option value="2.7">B- (2.7)</option>
+                        <option value="2.3">C+ (2.3)</option>
+                        <option value="2.0">C (2.0)</option>
+                        <option value="1.7">C- (1.7)</option>
+                        <option value="1.3">D+ (1.3)</option>
+                        <option value="1.0">D (1.0)</option>
+                        <option value="0.0">F (0.0)</option>
+                    </select>
+                </div>
+                
+                <button class="btn btn-success" onclick="addCourse()">Add Course</button>
+                <button class="btn btn-danger" onclick="clearAll()">Clear All</button>
+
+                <div class="course-list" id="courseList">
+                    <h3 style="margin-bottom: 15px; color: #ff4500;">Your Courses</h3>
+                    <div id="coursesContainer"></div>
+                </div>
+            </div>
+
+            <div class="results-section">
+                <div class="cgpa-display">
+                    <div class="cgpa-value" id="cgpaValue">0.00</div>
+                    <div class="cgpa-grade" id="cgpaGrade">No courses added</div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalCourses">0</div>
+                        <div class="stat-label">Total Courses</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalCredits">0</div>
+                        <div class="stat-label">Total Credits</div>
+                    </div>
+                </div>
+
+                <div class="recommendations" id="recommendations" style="display: none;">
+                    <h3>📊 Academic Insights</h3>
+                    <div id="recommendationsList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let courses = [];
+
+        function addCourse() {
+            const courseName = document.getElementById('courseName').value.trim();
+            const creditHours = parseInt(document.getElementById('creditHours').value);
+            const grade = parseFloat(document.getElementById('grade').value);
+
+            if (!courseName || !creditHours || isNaN(grade)) {
+                alert('Please fill in all fields correctly!');
+                return;
+            }
+
+            const course = {
+                id: Date.now(),
+                name: courseName,
+                credits: creditHours,
+                grade: grade,
+                gradeText: document.getElementById('grade').selectedOptions[0].text
+            };
+
+            courses.push(course);
+            updateDisplay();
+            clearInputs();
+        }
+
+        function removeCourse(courseId) {
+            courses = courses.filter(course => course.id !== courseId);
+            updateDisplay();
+        }
+
+        function clearAll() {
+            if (courses.length > 0 && confirm('Are you sure you want to clear all courses?')) {
+                courses = [];
+                updateDisplay();
+            }
+        }
+
+        function clearInputs() {
+            document.getElementById('courseName').value = '';
+            document.getElementById('creditHours').value = '';
+            document.getElementById('grade').value = '';
+        }
+
+        function calculateCGPA() {
+            if (courses.length === 0) return 0;
+
+            let totalGradePoints = 0;
+            let totalCredits = 0;
+
+            courses.forEach(course => {
+                totalGradePoints += course.grade * course.credits;
+                totalCredits += course.credits;
+            });
+
+            return totalCredits > 0 ? totalGradePoints / totalCredits : 0;
+        }
+
+        function getGradeText(cgpa) {
+            if (cgpa >= 3.7) return 'Excellent (A)';
+            if (cgpa >= 3.3) return 'Very Good (B+)';
+            if (cgpa >= 3.0) return 'Good (B)';
+            if (cgpa >= 2.7) return 'Satisfactory (B-)';
+            if (cgpa >= 2.0) return 'Pass (C)';
+            if (cgpa >= 1.0) return 'Poor (D)';
+            return 'Fail (F)';
+        }
+
+        function generateRecommendations() {
+            if (courses.length === 0) return [];
+
+            const cgpa = calculateCGPA();
+            const recommendations = [];
+
+            // Find courses with low grades
+            const lowGradeCourses = courses.filter(course => course.grade < 2.0);
+            const highGradeCourses = courses.filter(course => course.grade >= 3.5);
+
+            if (cgpa >= 3.5) {
+                recommendations.push('🌟 Excellent work! You\'re maintaining a high CGPA. Keep up the great effort!');
+            } else if (cgpa >= 3.0) {
+                recommendations.push('👍 Good performance! Consider focusing more on challenging courses to boost your CGPA.');
+            } else if (cgpa >= 2.0) {
+                recommendations.push('⚠️ Your CGPA needs improvement. Focus on courses where you can achieve better grades.');
+            } else {
+                recommendations.push('🚨 Critical: Your CGPA is below 2.0. Consider retaking failed courses or seeking academic support.');
+            }
+
+            if (lowGradeCourses.length > 0) {
+                recommendations.push(`📚 Consider retaking: ${lowGradeCourses.map(c => c.name).join(', ')} - these are pulling down your CGPA.`);
+            }
+
+            if (highGradeCourses.length > 0) {
+                recommendations.push(`✨ Strong performance in: ${highGradeCourses.map(c => c.name).join(', ')} - great job!`);
+            }
+
+            // Credit load recommendations
+            const totalCredits = courses.reduce((sum, course) => sum + course.credits, 0);
+            if (totalCredits < 12) {
+                recommendations.push('📈 Consider taking more credit hours if you\'re aiming for full-time status (typically 12+ credits).');
+            } else if (totalCredits > 18) {
+                recommendations.push('⚖️ You\'re taking a heavy course load. Make sure you can maintain quality in all courses.');
+            }
+
+            return recommendations;
+        }
+
+        function updateDisplay() {
+            // Update courses list
+            const container = document.getElementById('coursesContainer');
+            container.innerHTML = '';
+
+            courses.forEach(course => {
+                const courseDiv = document.createElement('div');
+                courseDiv.className = 'course-item';
+                courseDiv.innerHTML = `
+                    <div class="course-info">
+                        <div class="course-name">${course.name}</div>
+                        <div class="course-details">${course.credits} credits</div>
+                    </div>
+                    <div class="course-grade">${course.gradeText}</div>
+                    <button class="remove-btn" onclick="removeCourse(${course.id})">Remove</button>
+                `;
+                container.appendChild(courseDiv);
+            });
+
+            // Update CGPA
+            const cgpa = calculateCGPA();
+            document.getElementById('cgpaValue').textContent = cgpa.toFixed(2);
+            document.getElementById('cgpaGrade').textContent = courses.length > 0 ? getGradeText(cgpa) : 'No courses added';
+
+            // Update stats
+            document.getElementById('totalCourses').textContent = courses.length;
+            document.getElementById('totalCredits').textContent = courses.reduce((sum, course) => sum + course.credits, 0);
+
+            // Update recommendations
+            const recommendations = generateRecommendations();
+            const recommendationsDiv = document.getElementById('recommendations');
+            const recommendationsList = document.getElementById('recommendationsList');
+
+            if (recommendations.length > 0) {
+                recommendationsDiv.style.display = 'block';
+                recommendationsList.innerHTML = recommendations.map(rec => 
+                    `<div class="recommendation-item">${rec}</div>`
+                ).join('');
+            } else {
+                recommendationsDiv.style.display = 'none';
+            }
+        }
+
+        // Allow Enter key to add course
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addCourse();
+            }
+        });
+
+        // Initialize display
+        updateDisplay();
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97b0b6299388ef1b',t:'MTc1NzE5MDQ5My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
