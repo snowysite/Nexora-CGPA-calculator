@@ -3,252 +3,1358 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student CGPA Calculator</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Nexora CGPA Calculator - Student Grade Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'nexora-orange': '#FF4500',
+                        'nexora-dark': '#1a1a1a',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+        }
+        
+        .fade-in { 
+            animation: fadeIn 0.5s ease-in; 
+        }
+        
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(20px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        
+        .slide-up { 
+            animation: slideUp 0.4s ease-out; 
+        }
+        
+        @keyframes slideUp { 
+            from { transform: translateY(30px); opacity: 0; } 
+            to { transform: translateY(0); opacity: 1; } 
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #FF4500 0%, #FF6B35 100%);
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .input-focus:focus {
+            box-shadow: 0 0 0 3px rgba(255, 69, 0, 0.3);
+        }
+        
+        .grade-card {
+            transition: all 0.3s ease;
+        }
+        
+        .grade-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .cgpa-display {
+            background: linear-gradient(135deg, #FF4500, #FF6B35);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #2d2d2d;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #FF4500;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #FF6B35;
+        }
+    </style>
 </head>
-<body>
-    <div class="container">
-        <div class="header">
-            <div class="company-logo">
-                <svg class="logo-icon" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="50" cy="50" r="45" fill="white" stroke="#ff4500" stroke-width="3"/>
-                    <path d="M30 35h40v30H30z" fill="#ff4500"/>
-                    <circle cx="50" cy="50" r="8" fill="white"/>
-                    <path d="M42 42l16 16M58 42L42 58" stroke="white" stroke-width="2"/>
-                </svg>
-                <div>
-                    <div class="company-name">Nexora EduTech</div>
-                    <div style="font-size: 0.9rem; opacity: 0.8;">Academic Excellence Platform</div>
+<body class="min-h-screen text-white">
+    <!-- Navigation -->
+    <nav class="bg-black/90 backdrop-blur-sm border-b border-gray-800 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-4">
+                    <h1 class="text-2xl font-bold text-nexora-orange cursor-pointer" onclick="showPage('calculator')">
+                        🎓 Nexora CGPA
+                    </h1>
+                    <div id="navLinks" class="hidden md:flex space-x-6">
+                        <button onclick="showPage('calculator')" class="nav-link text-gray-300 hover:text-nexora-orange font-medium transition-colors">
+                            Calculator
+                        </button>
+                        <button onclick="showPage('history')" class="nav-link text-gray-300 hover:text-nexora-orange font-medium transition-colors">
+                            Grade History
+                        </button>
+                        <button onclick="showPage('analytics')" class="nav-link text-gray-300 hover:text-nexora-orange font-medium transition-colors">
+                            Analytics
+                        </button>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span id="userGreeting" class="text-gray-300 hidden"></span>
+                    <button id="loginBtn" onclick="showPage('login')" class="text-nexora-orange hover:text-orange-400 font-medium transition-colors">
+                        Login
+                    </button>
+                    <button id="signupBtn" onclick="showPage('signup')" class="gradient-bg text-white px-4 py-2 rounded-lg font-medium hover:opacity-90 transition-opacity">
+                        Sign Up
+                    </button>
+                    <button id="logoutBtn" onclick="logout()" class="text-red-400 hover:text-red-300 font-medium hidden transition-colors">
+                        Logout
+                    </button>
                 </div>
             </div>
-            <h1>🎓 CGPA Calculator</h1>
-            <p>Track your academic progress and make informed decisions about your courses</p>
+        </div>
+    </nav>
+
+    <!-- Main Content Container -->
+    <div id="mainContent" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        
+        <!-- Login Page -->
+        <div id="loginPage" class="page hidden">
+            <div class="max-w-md mx-auto">
+                <div class="glass-effect rounded-2xl p-8 slide-up">
+                    <div class="text-center mb-8">
+                        <h2 class="text-3xl font-bold text-white mb-2">Welcome Back</h2>
+                        <p class="text-gray-400">Login to access your CGPA calculator</p>
+                    </div>
+                    
+                    <form id="loginForm" class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Email Address</label>
+                            <input type="email" id="loginEmail" required 
+                                class="w-full px-4 py-3 bg-white/10 border border-gray-600 rounded-lg text-white placeholder-gray-400 input-focus focus:border-nexora-orange transition-colors"
+                                placeholder="Enter your email">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Password</label>
+                            <input type="password" id="loginPassword" required 
+                                class="w-full px-4 py-3 bg-white/10 border border-gray-600 rounded-lg text-white placeholder-gray-400 input-focus focus:border-nexora-orange transition-colors"
+                                placeholder="Enter your password">
+                        </div>
+                        
+                        <div id="loginError" class="text-red-400 text-sm hidden bg-red-900/20 p-3 rounded-lg border border-red-800"></div>
+                        
+                        <button type="submit" class="w-full gradient-bg text-white py-3 rounded-lg font-medium hover:opacity-90 transition-opacity">
+                            Login to Account
+                        </button>
+                    </form>
+                    
+                    <p class="text-center text-gray-400 mt-6">
+                        Don't have an account? 
+                        <button onclick="showPage('signup')" class="text-nexora-orange hover:text-orange-400 font-medium transition-colors">
+                            Create one here
+                        </button>
+                    </p>
+                </div>
+            </div>
         </div>
 
-        <div class="main-content">
-            <div class="course-input-section">
-                <h2>Add Course</h2>
-                <div class="input-group">
-                    <label for="courseName">Course Name</label>
-                    <input type="text" id="courseName" placeholder="e.g., Mathematics 101">
-                </div>
-                
-                <div class="input-group">
-                    <label for="creditHours">Credit Hours</label>
-                    <input type="number" id="creditHours" min="1" max="6" placeholder="e.g., 3">
-                </div>
-                
-                <div class="input-group">
-                    <label for="grade">Grade</label>
-                    <select id="grade">
-                        <option value="">Select Grade</option>
-                        <option value="4.0">A (4.0)</option>
-                        <option value="3.7">A- (3.7)</option>
-                        <option value="3.3">B+ (3.3)</option>
-                        <option value="3.0">B (3.0)</option>
-                        <option value="2.7">B- (2.7)</option>
-                        <option value="2.3">C+ (2.3)</option>
-                        <option value="2.0">C (2.0)</option>
-                        <option value="1.7">C- (1.7)</option>
-                        <option value="1.3">D+ (1.3)</option>
-                        <option value="1.0">D (1.0)</option>
-                        <option value="0.0">F (0.0)</option>
-                    </select>
-                </div>
-                
-                <button class="btn btn-success" onclick="addCourse()">Add Course</button>
-                <button class="btn btn-danger" onclick="clearAll()">Clear All</button>
-
-                <div class="course-list" id="courseList">
-                    <h3 style="margin-bottom: 15px; color: #ff4500;">Your Courses</h3>
-                    <div id="coursesContainer"></div>
+        <!-- Signup Page -->
+        <div id="signupPage" class="page hidden">
+            <div class="max-w-md mx-auto">
+                <div class="glass-effect rounded-2xl p-8 slide-up">
+                    <div class="text-center mb-8">
+                        <h2 class="text-3xl font-bold text-white mb-2">Join Nexora</h2>
+                        <p class="text-gray-400">Create your account to start tracking grades</p>
+                    </div>
+                    
+                    <form id="signupForm" class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Full Name</label>
+                            <input type="text" id="signupName" required 
+                                class="w-full px-4 py-3 bg-white/10 border border-gray-600 rounded-lg text-white placeholder-gray-400 input-focus focus:border-nexora-orange transition-colors"
+                                placeholder="Enter your full name">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Email Address</label>
+                            <input type="email" id="signupEmail" required 
+                                class="w-full px-4 py-3 bg-white/10 border border-gray-600 rounded-lg text-white placeholder-gray-400 input-focus focus:border-nexora-orange transition-colors"
+                                placeholder="Enter your email">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Student ID</label>
+                            <input type="text" id="signupStudentId" required 
+                                class="w-full px-4 py-3 bg-white/10 border border-gray-600 rounded-lg text-white placeholder-gray-400 input-focus focus:border-nexora-orange transition-colors"
+                                placeholder="Enter your student ID">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Department</label>
+                            <select id="signupDepartment" required 
+                                class="w-full px-4 py-3 bg-white/10 border border-gray-600 rounded-lg text-white input-focus focus:border-nexora-orange transition-colors">
+                                <option value="" class="bg-gray-800">Select Department</option>
+                                <option value="computer-science" class="bg-gray-800">Computer Science</option>
+                                <option value="engineering" class="bg-gray-800">Engineering</option>
+                                <option value="mathematics" class="bg-gray-800">Mathematics</option>
+                                <option value="physics" class="bg-gray-800">Physics</option>
+                                <option value="chemistry" class="bg-gray-800">Chemistry</option>
+                                <option value="biology" class="bg-gray-800">Biology</option>
+                                <option value="business" class="bg-gray-800">Business Administration</option>
+                                <option value="economics" class="bg-gray-800">Economics</option>
+                                <option value="psychology" class="bg-gray-800">Psychology</option>
+                                <option value="other" class="bg-gray-800">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Password</label>
+                            <input type="password" id="signupPassword" required minlength="6"
+                                class="w-full px-4 py-3 bg-white/10 border border-gray-600 rounded-lg text-white placeholder-gray-400 input-focus focus:border-nexora-orange transition-colors"
+                                placeholder="Create a password (min 6 characters)">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Confirm Password</label>
+                            <input type="password" id="signupConfirmPassword" required 
+                                class="w-full px-4 py-3 bg-white/10 border border-gray-600 rounded-lg text-white placeholder-gray-400 input-focus focus:border-nexora-orange transition-colors"
+                                placeholder="Confirm your password">
+                        </div>
+                        
+                        <div id="signupError" class="text-red-400 text-sm hidden bg-red-900/20 p-3 rounded-lg border border-red-800"></div>
+                        
+                        <button type="submit" class="w-full gradient-bg text-white py-3 rounded-lg font-medium hover:opacity-90 transition-opacity">
+                            Create Account
+                        </button>
+                    </form>
+                    
+                    <p class="text-center text-gray-400 mt-6">
+                        Already have an account? 
+                        <button onclick="showPage('login')" class="text-nexora-orange hover:text-orange-400 font-medium transition-colors">
+                            Login here
+                        </button>
+                    </p>
                 </div>
             </div>
+        </div>
 
-            <div class="results-section">
-                <div class="cgpa-display">
-                    <div class="cgpa-value" id="cgpaValue">0.00</div>
-                    <div class="cgpa-grade" id="cgpaGrade">No courses added</div>
+        <!-- CGPA Calculator Page -->
+        <div id="calculatorPage" class="page">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- CGPA Display Card -->
+                <div class="lg:col-span-1">
+                    <div class="glass-effect rounded-2xl p-6 mb-6 text-center">
+                        <h3 class="text-lg font-semibold text-gray-300 mb-4">Current CGPA</h3>
+                        <div class="text-6xl font-bold cgpa-display mb-4" id="currentCGPA">0.00</div>
+                        <div class="text-sm text-gray-400 mb-4">
+                            <span id="totalCredits">0</span> Total Credits
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 text-sm">
+                            <div class="bg-white/5 rounded-lg p-3">
+                                <div class="text-gray-400">Semesters</div>
+                                <div class="text-xl font-semibold text-white" id="semesterCount">0</div>
+                            </div>
+                            <div class="bg-white/5 rounded-lg p-3">
+                                <div class="text-gray-400">Courses</div>
+                                <div class="text-xl font-semibold text-white" id="courseCount">0</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="glass-effect rounded-2xl p-6">
+                        <h3 class="text-lg font-semibold text-white mb-4">Quick Actions</h3>
+                        <div class="space-y-3">
+                            <button onclick="clearAllGrades()" class="w-full bg-red-600/20 hover:bg-red-600/30 text-red-400 py-2 px-4 rounded-lg transition-colors">
+                                Clear All Grades
+                            </button>
+                            <button onclick="exportGrades()" class="w-full bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 py-2 px-4 rounded-lg transition-colors">
+                                Export Data
+                            </button>
+                            <button onclick="showPage('analytics')" class="w-full bg-green-600/20 hover:bg-green-600/30 text-green-400 py-2 px-4 rounded-lg transition-colors">
+                                View Analytics
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-value" id="totalCourses">0</div>
-                        <div class="stat-label">Total Courses</div>
+                <!-- Grade Entry Form -->
+                <div class="lg:col-span-2">
+                    <div class="glass-effect rounded-2xl p-6 mb-6">
+                        <h3 class="text-xl font-semibold text-white mb-6">Add New Course Grade</h3>
+                        
+                        <form id="gradeForm" class="space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-300 mb-2">Course Name</label>
+                                    <input type="text" id="courseName" required 
+                                        class="w-full px-4 py-3 bg-white/10 border border-gray-600 rounded-lg text-white placeholder-gray-400 input-focus focus:border-nexora-orange transition-colors"
+                                        placeholder="e.g., Data Structures">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-300 mb-2">Course Code</label>
+                                    <input type="text" id="courseCode" required 
+                                        class="w-full px-4 py-3 bg-white/10 border border-gray-600 rounded-lg text-white placeholder-gray-400 input-focus focus:border-nexora-orange transition-colors"
+                                        placeholder="e.g., CS201">
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-300 mb-2">Credit Hours</label>
+                                    <input type="number" id="creditHours" required min="1" max="6" 
+                                        class="w-full px-4 py-3 bg-white/10 border border-gray-600 rounded-lg text-white placeholder-gray-400 input-focus focus:border-nexora-orange transition-colors"
+                                        placeholder="3">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-300 mb-2">Grade</label>
+                                    <select id="grade" required 
+                                        class="w-full px-4 py-3 bg-white/10 border border-gray-600 rounded-lg text-white input-focus focus:border-nexora-orange transition-colors">
+                                        <option value="" class="bg-gray-800">Select Grade</option>
+                                        <option value="A+" class="bg-gray-800">A+ (4.0)</option>
+                                        <option value="A" class="bg-gray-800">A (4.0)</option>
+                                        <option value="A-" class="bg-gray-800">A- (3.7)</option>
+                                        <option value="B+" class="bg-gray-800">B+ (3.3)</option>
+                                        <option value="B" class="bg-gray-800">B (3.0)</option>
+                                        <option value="B-" class="bg-gray-800">B- (2.7)</option>
+                                        <option value="C+" class="bg-gray-800">C+ (2.3)</option>
+                                        <option value="C" class="bg-gray-800">C (2.0)</option>
+                                        <option value="C-" class="bg-gray-800">C- (1.7)</option>
+                                        <option value="D+" class="bg-gray-800">D+ (1.3)</option>
+                                        <option value="D" class="bg-gray-800">D (1.0)</option>
+                                        <option value="F" class="bg-gray-800">F (0.0)</option>
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-300 mb-2">Semester</label>
+                                    <input type="text" id="semester" required 
+                                        class="w-full px-4 py-3 bg-white/10 border border-gray-600 rounded-lg text-white placeholder-gray-400 input-focus focus:border-nexora-orange transition-colors"
+                                        placeholder="Fall 2024">
+                                </div>
+                            </div>
+                            
+                            <div id="gradeError" class="text-red-400 text-sm hidden bg-red-900/20 p-3 rounded-lg border border-red-800"></div>
+                            
+                            <button type="submit" class="w-full gradient-bg text-white py-3 rounded-lg font-medium hover:opacity-90 transition-opacity">
+                                Add Course Grade
+                            </button>
+                        </form>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="totalCredits">0</div>
-                        <div class="stat-label">Total Credits</div>
+
+                    <!-- Current Semester Grades -->
+                    <div class="glass-effect rounded-2xl p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-xl font-semibold text-white">Recent Grades</h3>
+                            <select id="semesterFilter" class="px-3 py-2 bg-white/10 border border-gray-600 rounded-lg text-white text-sm input-focus focus:border-nexora-orange transition-colors">
+                                <option value="all" class="bg-gray-800">All Semesters</option>
+                            </select>
+                        </div>
+                        
+                        <div id="gradesContainer" class="space-y-3">
+                            <div class="text-center py-8 text-gray-400">
+                                <div class="text-4xl mb-4">📚</div>
+                                <p>No grades added yet. Add your first course above!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Grade History Page -->
+        <div id="historyPage" class="page hidden">
+            <div class="max-w-6xl mx-auto">
+                <div class="flex items-center justify-between mb-8">
+                    <h2 class="text-3xl font-bold text-white">Grade History</h2>
+                    <div class="flex items-center space-x-4">
+                        <select id="historyFilter" class="px-4 py-2 bg-white/10 border border-gray-600 rounded-lg text-white input-focus focus:border-nexora-orange transition-colors">
+                            <option value="all" class="bg-gray-800">All Semesters</option>
+                        </select>
+                        <select id="sortBy" class="px-4 py-2 bg-white/10 border border-gray-600 rounded-lg text-white input-focus focus:border-nexora-orange transition-colors">
+                            <option value="newest" class="bg-gray-800">Newest First</option>
+                            <option value="oldest" class="bg-gray-800">Oldest First</option>
+                            <option value="grade-high" class="bg-gray-800">Highest Grade</option>
+                            <option value="grade-low" class="bg-gray-800">Lowest Grade</option>
+                            <option value="credits" class="bg-gray-800">Credit Hours</option>
+                        </select>
                     </div>
                 </div>
 
-                <div class="recommendations" id="recommendations" style="display: none;">
-                    <h3>📊 Academic Insights</h3>
-                    <div id="recommendationsList"></div>
+                <div id="historyContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Dynamic content -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Page -->
+        <div id="analyticsPage" class="page hidden">
+            <div class="max-w-6xl mx-auto">
+                <h2 class="text-3xl font-bold text-white mb-8">Academic Analytics</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <!-- Stats Cards -->
+                    <div class="glass-effect rounded-2xl p-6 text-center">
+                        <div class="text-3xl mb-2">🎯</div>
+                        <div class="text-2xl font-bold text-nexora-orange" id="analyticsGPA">0.00</div>
+                        <div class="text-sm text-gray-400">Current CGPA</div>
+                    </div>
+                    
+                    <div class="glass-effect rounded-2xl p-6 text-center">
+                        <div class="text-3xl mb-2">📊</div>
+                        <div class="text-2xl font-bold text-blue-400" id="analyticsCredits">0</div>
+                        <div class="text-sm text-gray-400">Total Credits</div>
+                    </div>
+                    
+                    <div class="glass-effect rounded-2xl p-6 text-center">
+                        <div class="text-3xl mb-2">⭐</div>
+                        <div class="text-2xl font-bold text-green-400" id="analyticsHighest">-</div>
+                        <div class="text-sm text-gray-400">Highest Grade</div>
+                    </div>
+                    
+                    <div class="glass-effect rounded-2xl p-6 text-center">
+                        <div class="text-3xl mb-2">📈</div>
+                        <div class="text-2xl font-bold text-purple-400" id="analyticsTrend">-</div>
+                        <div class="text-sm text-gray-400">GPA Trend</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Grade Distribution -->
+                    <div class="glass-effect rounded-2xl p-6">
+                        <h3 class="text-xl font-semibold text-white mb-6">Grade Distribution</h3>
+                        <div id="gradeDistribution" class="space-y-4">
+                            <!-- Dynamic content -->
+                        </div>
+                    </div>
+
+                    <!-- Semester Performance -->
+                    <div class="glass-effect rounded-2xl p-6">
+                        <h3 class="text-xl font-semibold text-white mb-6">Semester Performance</h3>
+                        <div id="semesterPerformance" class="space-y-4">
+                            <!-- Dynamic content -->
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Success/Error Toast -->
+    <div id="toast" class="fixed top-4 right-4 z-50 hidden">
+        <div id="toastContent" class="px-6 py-3 rounded-lg shadow-lg text-white font-medium max-w-sm">
+            <!-- Dynamic content -->
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center">
+        <div class="glass-effect rounded-2xl p-6 max-w-md w-full mx-4">
+            <h3 class="text-lg font-semibold text-white mb-4" id="confirmTitle">Confirm Action</h3>
+            <p class="text-gray-300 mb-6" id="confirmMessage">Are you sure you want to proceed?</p>
+            <div class="flex items-center justify-end space-x-4">
+                <button onclick="closeConfirmModal()" class="px-4 py-2 text-gray-400 hover:text-white transition-colors">
+                    Cancel
+                </button>
+                <button id="confirmBtn" class="gradient-bg text-white px-4 py-2 rounded-lg font-medium hover:opacity-90 transition-opacity">
+                    Confirm
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        let courses = [];
+        // Global variables
+        let currentUser = null;
+        let currentPage = 'calculator';
+        let confirmCallback = null;
 
-        function addCourse() {
-            const courseName = document.getElementById('courseName').value.trim();
-            const creditHours = parseInt(document.getElementById('creditHours').value);
-            const grade = parseFloat(document.getElementById('grade').value);
+        // Data structure for localStorage
+        const STORAGE_KEYS = {
+            USERS: 'nexora_cgpa_users',
+            GRADES: 'nexora_cgpa_grades',
+            CURRENT_USER: 'nexora_cgpa_current_user'
+        };
 
-            if (!courseName || !creditHours || isNaN(grade)) {
-                alert('Please fill in all fields correctly!');
+        // Grade point mapping
+        const GRADE_POINTS = {
+            'A+': 4.0, 'A': 4.0, 'A-': 3.7,
+            'B+': 3.3, 'B': 3.0, 'B-': 2.7,
+            'C+': 2.3, 'C': 2.0, 'C-': 1.7,
+            'D+': 1.3, 'D': 1.0, 'F': 0.0
+        };
+
+        // Initialize app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            setupEventListeners();
+        });
+
+        /**
+         * Initialize the application
+         * Sets up localStorage, checks for logged-in user, and shows initial page
+         */
+        function initializeApp() {
+            // Initialize localStorage if empty
+            if (!localStorage.getItem(STORAGE_KEYS.USERS)) {
+                localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify([]));
+            }
+            if (!localStorage.getItem(STORAGE_KEYS.GRADES)) {
+                localStorage.setItem(STORAGE_KEYS.GRADES, JSON.stringify([]));
+            }
+
+            // Check if user is logged in
+            const savedUser = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                updateUIForLoggedInUser();
+                showPage('calculator');
+            } else {
+                updateUIForLoggedOutUser();
+                showPage('login');
+            }
+        }
+
+        /**
+         * Set up all event listeners
+         */
+        function setupEventListeners() {
+            // Form submissions
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+            document.getElementById('signupForm').addEventListener('submit', handleSignup);
+            document.getElementById('gradeForm').addEventListener('submit', handleAddGrade);
+
+            // Filter changes
+            document.getElementById('semesterFilter').addEventListener('change', loadGrades);
+            document.getElementById('historyFilter').addEventListener('change', loadHistory);
+            document.getElementById('sortBy').addEventListener('change', loadHistory);
+        }
+
+        /**
+         * Generate unique ID for records
+         */
+        function generateId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        }
+
+        /**
+         * Show toast notification
+         */
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastContent = document.getElementById('toastContent');
+            
+            toastContent.textContent = message;
+            toastContent.className = `px-6 py-3 rounded-lg shadow-lg text-white font-medium max-w-sm ${
+                type === 'success' ? 'bg-green-600' : 'bg-red-600'
+            }`;
+            
+            toast.classList.remove('hidden');
+            
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 4000);
+        }
+
+        /**
+         * Show/hide error messages in forms
+         */
+        function showError(errorDiv, message) {
+            errorDiv.textContent = message;
+            errorDiv.classList.remove('hidden');
+        }
+
+        function hideError(errorDiv) {
+            errorDiv.classList.add('hidden');
+        }
+
+        /**
+         * Data access functions
+         */
+        function getUsers() {
+            return JSON.parse(localStorage.getItem(STORAGE_KEYS.USERS) || '[]');
+        }
+
+        function getGrades() {
+            return JSON.parse(localStorage.getItem(STORAGE_KEYS.GRADES) || '[]');
+        }
+
+        function saveUsers(users) {
+            localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+        }
+
+        function saveGrades(grades) {
+            localStorage.setItem(STORAGE_KEYS.GRADES, JSON.stringify(grades));
+        }
+
+        /**
+         * Authentication Functions
+         */
+        function handleLogin(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const errorDiv = document.getElementById('loginError');
+            
+            // Validation
+            if (!email || !password) {
+                showError(errorDiv, 'Please fill in all fields');
                 return;
             }
 
-            const course = {
-                id: Date.now(),
-                name: courseName,
-                credits: creditHours,
-                grade: grade,
-                gradeText: document.getElementById('grade').selectedOptions[0].text
+            // Check credentials
+            const users = getUsers();
+            const user = users.find(u => u.email === email && u.password === password);
+            
+            if (!user) {
+                showError(errorDiv, 'Invalid email or password');
+                return;
+            }
+
+            // Login successful
+            currentUser = user;
+            localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(user));
+            updateUIForLoggedInUser();
+            showPage('calculator');
+            showToast('Welcome back, ' + user.name + '!');
+            
+            // Reset form
+            document.getElementById('loginForm').reset();
+            hideError(errorDiv);
+        }
+
+        function handleSignup(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('signupName').value.trim();
+            const email = document.getElementById('signupEmail').value.trim();
+            const studentId = document.getElementById('signupStudentId').value.trim();
+            const department = document.getElementById('signupDepartment').value;
+            const password = document.getElementById('signupPassword').value;
+            const confirmPassword = document.getElementById('signupConfirmPassword').value;
+            const errorDiv = document.getElementById('signupError');
+            
+            // Validation
+            if (!name || !email || !studentId || !department || !password || !confirmPassword) {
+                showError(errorDiv, 'Please fill in all fields');
+                return;
+            }
+
+            if (password.length < 6) {
+                showError(errorDiv, 'Password must be at least 6 characters long');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                showError(errorDiv, 'Passwords do not match');
+                return;
+            }
+
+            // Email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showError(errorDiv, 'Please enter a valid email address');
+                return;
+            }
+
+            // Check if email or student ID already exists
+            const users = getUsers();
+            if (users.find(u => u.email === email)) {
+                showError(errorDiv, 'Email already registered');
+                return;
+            }
+
+            if (users.find(u => u.studentId === studentId)) {
+                showError(errorDiv, 'Student ID already registered');
+                return;
+            }
+
+            // Create new user
+            const newUser = {
+                id: generateId(),
+                name: name,
+                email: email,
+                studentId: studentId,
+                department: department,
+                password: password,
+                createdAt: new Date().toISOString()
             };
 
-            courses.push(course);
-            updateDisplay();
-            clearInputs();
+            users.push(newUser);
+            saveUsers(users);
+
+            // Auto login
+            currentUser = newUser;
+            localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(newUser));
+            updateUIForLoggedInUser();
+            showPage('calculator');
+            showToast('Account created successfully! Welcome to Nexora CGPA Calculator.');
+            
+            // Reset form
+            document.getElementById('signupForm').reset();
+            hideError(errorDiv);
         }
 
-        function removeCourse(courseId) {
-            courses = courses.filter(course => course.id !== courseId);
-            updateDisplay();
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+            updateUIForLoggedOutUser();
+            showPage('login');
+            showToast('Logged out successfully!');
         }
 
-        function clearAll() {
-            if (courses.length > 0 && confirm('Are you sure you want to clear all courses?')) {
-                courses = [];
-                updateDisplay();
-            }
+        /**
+         * UI Update Functions
+         */
+        function updateUIForLoggedInUser() {
+            document.getElementById('loginBtn').classList.add('hidden');
+            document.getElementById('signupBtn').classList.add('hidden');
+            document.getElementById('logoutBtn').classList.remove('hidden');
+            document.getElementById('userGreeting').classList.remove('hidden');
+            document.getElementById('userGreeting').textContent = `Hello, ${currentUser.name}!`;
+            document.getElementById('navLinks').classList.remove('hidden');
         }
 
-        function clearInputs() {
-            document.getElementById('courseName').value = '';
-            document.getElementById('creditHours').value = '';
-            document.getElementById('grade').value = '';
+        function updateUIForLoggedOutUser() {
+            document.getElementById('loginBtn').classList.remove('hidden');
+            document.getElementById('signupBtn').classList.remove('hidden');
+            document.getElementById('logoutBtn').classList.add('hidden');
+            document.getElementById('userGreeting').classList.add('hidden');
+            document.getElementById('navLinks').classList.add('hidden');
         }
 
-        function calculateCGPA() {
-            if (courses.length === 0) return 0;
-
-            let totalGradePoints = 0;
-            let totalCredits = 0;
-
-            courses.forEach(course => {
-                totalGradePoints += course.grade * course.credits;
-                totalCredits += course.credits;
+        /**
+         * Page Navigation
+         */
+        function showPage(pageName) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.add('hidden');
             });
 
-            return totalCredits > 0 ? totalGradePoints / totalCredits : 0;
+            // Show requested page
+            const targetPage = document.getElementById(pageName + 'Page');
+            if (targetPage) {
+                targetPage.classList.remove('hidden');
+                targetPage.classList.add('fade-in');
+                currentPage = pageName;
+            }
+
+            // Update page content based on authentication
+            if (!currentUser && ['calculator', 'history', 'analytics'].includes(pageName)) {
+                showPage('login');
+                showToast('Please login to access this feature', 'error');
+                return;
+            }
+
+            // Load page-specific content
+            switch(pageName) {
+                case 'calculator':
+                    loadGrades();
+                    updateCGPADisplay();
+                    break;
+                case 'history':
+                    loadHistory();
+                    break;
+                case 'analytics':
+                    loadAnalytics();
+                    break;
+            }
         }
 
-        function getGradeText(cgpa) {
-            if (cgpa >= 3.7) return 'Excellent (A)';
-            if (cgpa >= 3.3) return 'Very Good (B+)';
-            if (cgpa >= 3.0) return 'Good (B)';
-            if (cgpa >= 2.7) return 'Satisfactory (B-)';
-            if (cgpa >= 2.0) return 'Pass (C)';
-            if (cgpa >= 1.0) return 'Poor (D)';
-            return 'Fail (F)';
+        /**
+         * Grade Management Functions
+         */
+        function handleAddGrade(e) {
+            e.preventDefault();
+            
+            const courseName = document.getElementById('courseName').value.trim();
+            const courseCode = document.getElementById('courseCode').value.trim().toUpperCase();
+            const creditHours = parseInt(document.getElementById('creditHours').value);
+            const grade = document.getElementById('grade').value;
+            const semester = document.getElementById('semester').value.trim();
+            const errorDiv = document.getElementById('gradeError');
+            
+            // Validation
+            if (!courseName || !courseCode || !creditHours || !grade || !semester) {
+                showError(errorDiv, 'Please fill in all fields');
+                return;
+            }
+
+            if (creditHours < 1 || creditHours > 6) {
+                showError(errorDiv, 'Credit hours must be between 1 and 6');
+                return;
+            }
+
+            // Check for duplicate course in same semester
+            const grades = getGrades();
+            const duplicate = grades.find(g => 
+                g.userId === currentUser.id && 
+                g.courseCode === courseCode && 
+                g.semester === semester
+            );
+
+            if (duplicate) {
+                showError(errorDiv, 'Course already exists in this semester. Edit or delete the existing entry first.');
+                return;
+            }
+
+            // Create new grade record
+            const newGrade = {
+                id: generateId(),
+                userId: currentUser.id,
+                courseName: courseName,
+                courseCode: courseCode,
+                creditHours: creditHours,
+                grade: grade,
+                gradePoints: GRADE_POINTS[grade],
+                semester: semester,
+                createdAt: new Date().toISOString()
+            };
+
+            grades.push(newGrade);
+            saveGrades(grades);
+
+            // Update UI
+            loadGrades();
+            updateCGPADisplay();
+            showToast(`${courseName} (${grade}) added successfully!`);
+            
+            // Reset form
+            document.getElementById('gradeForm').reset();
+            hideError(errorDiv);
         }
 
-        function generateRecommendations() {
-            if (courses.length === 0) return [];
+        function loadGrades() {
+            const grades = getGrades().filter(g => g.userId === currentUser.id);
+            const container = document.getElementById('gradesContainer');
+            const semesterFilter = document.getElementById('semesterFilter');
+            
+            // Update semester filter options
+            const semesters = [...new Set(grades.map(g => g.semester))].sort().reverse();
+            semesterFilter.innerHTML = '<option value="all" class="bg-gray-800">All Semesters</option>';
+            semesters.forEach(semester => {
+                semesterFilter.innerHTML += `<option value="${semester}" class="bg-gray-800">${semester}</option>`;
+            });
 
-            const cgpa = calculateCGPA();
-            const recommendations = [];
+            // Filter grades
+            const selectedSemester = semesterFilter.value;
+            let filteredGrades = selectedSemester === 'all' ? grades : grades.filter(g => g.semester === selectedSemester);
+            
+            // Sort by newest first
+            filteredGrades.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-            // Find courses with low grades
-            const lowGradeCourses = courses.filter(course => course.grade < 2.0);
-            const highGradeCourses = courses.filter(course => course.grade >= 3.5);
-
-            if (cgpa >= 3.5) {
-                recommendations.push('🌟 Excellent work! You\'re maintaining a high CGPA. Keep up the great effort!');
-            } else if (cgpa >= 3.0) {
-                recommendations.push('👍 Good performance! Consider focusing more on challenging courses to boost your CGPA.');
-            } else if (cgpa >= 2.0) {
-                recommendations.push('⚠️ Your CGPA needs improvement. Focus on courses where you can achieve better grades.');
-            } else {
-                recommendations.push('🚨 Critical: Your CGPA is below 2.0. Consider retaking failed courses or seeking academic support.');
-            }
-
-            if (lowGradeCourses.length > 0) {
-                recommendations.push(`📚 Consider retaking: ${lowGradeCourses.map(c => c.name).join(', ')} - these are pulling down your CGPA.`);
-            }
-
-            if (highGradeCourses.length > 0) {
-                recommendations.push(`✨ Strong performance in: ${highGradeCourses.map(c => c.name).join(', ')} - great job!`);
-            }
-
-            // Credit load recommendations
-            const totalCredits = courses.reduce((sum, course) => sum + course.credits, 0);
-            if (totalCredits < 12) {
-                recommendations.push('📈 Consider taking more credit hours if you\'re aiming for full-time status (typically 12+ credits).');
-            } else if (totalCredits > 18) {
-                recommendations.push('⚖️ You\'re taking a heavy course load. Make sure you can maintain quality in all courses.');
-            }
-
-            return recommendations;
-        }
-
-        function updateDisplay() {
-            // Update courses list
-            const container = document.getElementById('coursesContainer');
-            container.innerHTML = '';
-
-            courses.forEach(course => {
-                const courseDiv = document.createElement('div');
-                courseDiv.className = 'course-item';
-                courseDiv.innerHTML = `
-                    <div class="course-info">
-                        <div class="course-name">${course.name}</div>
-                        <div class="course-details">${course.credits} credits</div>
+            if (filteredGrades.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8 text-gray-400">
+                        <div class="text-4xl mb-4">📚</div>
+                        <p>No grades found for the selected filter.</p>
                     </div>
-                    <div class="course-grade">${course.gradeText}</div>
-                    <button class="remove-btn" onclick="removeCourse(${course.id})">Remove</button>
                 `;
-                container.appendChild(courseDiv);
-            });
-
-            // Update CGPA
-            const cgpa = calculateCGPA();
-            document.getElementById('cgpaValue').textContent = cgpa.toFixed(2);
-            document.getElementById('cgpaGrade').textContent = courses.length > 0 ? getGradeText(cgpa) : 'No courses added';
-
-            // Update stats
-            document.getElementById('totalCourses').textContent = courses.length;
-            document.getElementById('totalCredits').textContent = courses.reduce((sum, course) => sum + course.credits, 0);
-
-            // Update recommendations
-            const recommendations = generateRecommendations();
-            const recommendationsDiv = document.getElementById('recommendations');
-            const recommendationsList = document.getElementById('recommendationsList');
-
-            if (recommendations.length > 0) {
-                recommendationsDiv.style.display = 'block';
-                recommendationsList.innerHTML = recommendations.map(rec => 
-                    `<div class="recommendation-item">${rec}</div>`
-                ).join('');
-            } else {
-                recommendationsDiv.style.display = 'none';
+                return;
             }
+
+            container.innerHTML = filteredGrades.map(grade => createGradeCardHTML(grade)).join('');
         }
 
-        // Allow Enter key to add course
-        document.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                addCourse();
+        function createGradeCardHTML(grade) {
+            const gradeColors = {
+                'A+': 'text-green-400 bg-green-900/20',
+                'A': 'text-green-400 bg-green-900/20',
+                'A-': 'text-green-400 bg-green-900/20',
+                'B+': 'text-blue-400 bg-blue-900/20',
+                'B': 'text-blue-400 bg-blue-900/20',
+                'B-': 'text-blue-400 bg-blue-900/20',
+                'C+': 'text-yellow-400 bg-yellow-900/20',
+                'C': 'text-yellow-400 bg-yellow-900/20',
+                'C-': 'text-yellow-400 bg-yellow-900/20',
+                'D+': 'text-orange-400 bg-orange-900/20',
+                'D': 'text-orange-400 bg-orange-900/20',
+                'F': 'text-red-400 bg-red-900/20'
+            };
+
+            const gradeColor = gradeColors[grade.grade] || 'text-gray-400 bg-gray-900/20';
+            const timeAgo = getTimeAgo(grade.createdAt);
+
+            return `
+                <div class="grade-card bg-white/5 rounded-lg p-4 border border-gray-700 hover:border-nexora-orange/50">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-white text-lg">${grade.courseName}</h4>
+                            <p class="text-gray-400 text-sm">${grade.courseCode} • ${grade.semester}</p>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <span class="px-3 py-1 rounded-full text-sm font-medium ${gradeColor}">
+                                ${grade.grade}
+                            </span>
+                            <span class="text-gray-400 text-sm">${grade.creditHours} CR</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-gray-500">Added ${timeAgo}</span>
+                        <div class="flex items-center space-x-2">
+                            <button onclick="editGrade('${grade.id}')" class="text-nexora-orange hover:text-orange-400 text-sm transition-colors">
+                                Edit
+                            </button>
+                            <button onclick="deleteGrade('${grade.id}')" class="text-red-400 hover:text-red-300 text-sm transition-colors">
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function updateCGPADisplay() {
+            const grades = getGrades().filter(g => g.userId === currentUser.id);
+            
+            if (grades.length === 0) {
+                document.getElementById('currentCGPA').textContent = '0.00';
+                document.getElementById('totalCredits').textContent = '0';
+                document.getElementById('semesterCount').textContent = '0';
+                document.getElementById('courseCount').textContent = '0';
+                return;
+            }
+
+            // Calculate CGPA
+            const totalPoints = grades.reduce((sum, grade) => sum + (grade.gradePoints * grade.creditHours), 0);
+            const totalCredits = grades.reduce((sum, grade) => sum + grade.creditHours, 0);
+            const cgpa = totalCredits > 0 ? (totalPoints / totalCredits) : 0;
+
+            // Count unique semesters
+            const uniqueSemesters = new Set(grades.map(g => g.semester)).size;
+
+            // Update display
+            document.getElementById('currentCGPA').textContent = cgpa.toFixed(2);
+            document.getElementById('totalCredits').textContent = totalCredits;
+            document.getElementById('semesterCount').textContent = uniqueSemesters;
+            document.getElementById('courseCount').textContent = grades.length;
+        }
+
+        function deleteGrade(gradeId) {
+            showConfirmModal(
+                'Delete Grade',
+                'Are you sure you want to delete this grade? This action cannot be undone.',
+                () => {
+                    const grades = getGrades();
+                    const updatedGrades = grades.filter(g => g.id !== gradeId);
+                    saveGrades(updatedGrades);
+                    
+                    loadGrades();
+                    updateCGPADisplay();
+                    showToast('Grade deleted successfully!');
+                }
+            );
+        }
+
+        function editGrade(gradeId) {
+            const grades = getGrades();
+            const grade = grades.find(g => g.id === gradeId);
+            
+            if (!grade) {
+                showToast('Grade not found', 'error');
+                return;
+            }
+
+            // Fill form with existing data
+            document.getElementById('courseName').value = grade.courseName;
+            document.getElementById('courseCode').value = grade.courseCode;
+            document.getElementById('creditHours').value = grade.creditHours;
+            document.getElementById('grade').value = grade.grade;
+            document.getElementById('semester').value = grade.semester;
+
+            // Delete the existing grade
+            deleteGrade(gradeId);
+            
+            // Scroll to form
+            document.getElementById('gradeForm').scrollIntoView({ behavior: 'smooth' });
+            showToast('Grade loaded for editing. Make changes and submit.');
+        }
+
+        function clearAllGrades() {
+            showConfirmModal(
+                'Clear All Grades',
+                'Are you sure you want to delete all your grades? This action cannot be undone.',
+                () => {
+                    const grades = getGrades();
+                    const updatedGrades = grades.filter(g => g.userId !== currentUser.id);
+                    saveGrades(updatedGrades);
+                    
+                    loadGrades();
+                    updateCGPADisplay();
+                    showToast('All grades cleared successfully!');
+                }
+            );
+        }
+
+        /**
+         * History Page Functions
+         */
+        function loadHistory() {
+            const grades = getGrades().filter(g => g.userId === currentUser.id);
+            const container = document.getElementById('historyContainer');
+            const historyFilter = document.getElementById('historyFilter');
+            const sortBy = document.getElementById('sortBy');
+            
+            // Update filter options
+            const semesters = [...new Set(grades.map(g => g.semester))].sort().reverse();
+            historyFilter.innerHTML = '<option value="all" class="bg-gray-800">All Semesters</option>';
+            semesters.forEach(semester => {
+                historyFilter.innerHTML += `<option value="${semester}" class="bg-gray-800">${semester}</option>`;
+            });
+
+            // Filter grades
+            const selectedSemester = historyFilter.value;
+            let filteredGrades = selectedSemester === 'all' ? grades : grades.filter(g => g.semester === selectedSemester);
+            
+            // Sort grades
+            const sortValue = sortBy.value;
+            filteredGrades.sort((a, b) => {
+                switch(sortValue) {
+                    case 'oldest':
+                        return new Date(a.createdAt) - new Date(b.createdAt);
+                    case 'grade-high':
+                        return b.gradePoints - a.gradePoints;
+                    case 'grade-low':
+                        return a.gradePoints - b.gradePoints;
+                    case 'credits':
+                        return b.creditHours - a.creditHours;
+                    default: // newest
+                        return new Date(b.createdAt) - new Date(a.createdAt);
+                }
+            });
+
+            if (filteredGrades.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full text-center py-12 text-gray-400">
+                        <div class="text-6xl mb-4">📊</div>
+                        <h3 class="text-xl font-semibold mb-2">No grades found</h3>
+                        <p>Start adding grades to see your academic history!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filteredGrades.map(grade => createHistoryCardHTML(grade)).join('');
+        }
+
+        function createHistoryCardHTML(grade) {
+            const gradeColors = {
+                'A+': 'from-green-500 to-green-600',
+                'A': 'from-green-500 to-green-600',
+                'A-': 'from-green-500 to-green-600',
+                'B+': 'from-blue-500 to-blue-600',
+                'B': 'from-blue-500 to-blue-600',
+                'B-': 'from-blue-500 to-blue-600',
+                'C+': 'from-yellow-500 to-yellow-600',
+                'C': 'from-yellow-500 to-yellow-600',
+                'C-': 'from-yellow-500 to-yellow-600',
+                'D+': 'from-orange-500 to-orange-600',
+                'D': 'from-orange-500 to-orange-600',
+                'F': 'from-red-500 to-red-600'
+            };
+
+            const gradientClass = gradeColors[grade.grade] || 'from-gray-500 to-gray-600';
+            const timeAgo = getTimeAgo(grade.createdAt);
+
+            return `
+                <div class="glass-effect rounded-2xl p-6 grade-card">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex-1">
+                            <h3 class="text-lg font-semibold text-white mb-1">${grade.courseName}</h3>
+                            <p class="text-gray-400 text-sm">${grade.courseCode}</p>
+                        </div>
+                        <div class="text-right">
+                            <div class="bg-gradient-to-r ${gradientClass} text-white px-3 py-1 rounded-full text-sm font-bold mb-1">
+                                ${grade.grade}
+                            </div>
+                            <div class="text-xs text-gray-400">${grade.gradePoints.toFixed(1)} GPA</div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div class="bg-white/5 rounded-lg p-3 text-center">
+                            <div class="text-lg font-semibold text-white">${grade.creditHours}</div>
+                            <div class="text-xs text-gray-400">Credit Hours</div>
+                        </div>
+                        <div class="bg-white/5 rounded-lg p-3 text-center">
+                            <div class="text-lg font-semibold text-nexora-orange">${(grade.gradePoints * grade.creditHours).toFixed(1)}</div>
+                            <div class="text-xs text-gray-400">Quality Points</div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="text-gray-400">${grade.semester}</span>
+                        <span class="text-gray-500">Added ${timeAgo}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        /**
+         * Analytics Page Functions
+         */
+        function loadAnalytics() {
+            const grades = getGrades().filter(g => g.userId === currentUser.id);
+            
+            if (grades.length === 0) {
+                // Show empty state
+                document.getElementById('analyticsGPA').textContent = '0.00';
+                document.getElementById('analyticsCredits').textContent = '0';
+                document.getElementById('analyticsHighest').textContent = '-';
+                document.getElementById('analyticsTrend').textContent = '-';
+                
+                document.getElementById('gradeDistribution').innerHTML = `
+                    <div class="text-center py-8 text-gray-400">
+                        <p>No data available. Add some grades to see analytics!</p>
+                    </div>
+                `;
+                
+                document.getElementById('semesterPerformance').innerHTML = `
+                    <div class="text-center py-8 text-gray-400">
+                        <p>No semester data available.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Calculate overall stats
+            const totalPoints = grades.reduce((sum, grade) => sum + (grade.gradePoints * grade.creditHours), 0);
+            const totalCredits = grades.reduce((sum, grade) => sum + grade.creditHours, 0);
+            const cgpa = totalCredits > 0 ? (totalPoints / totalCredits) : 0;
+            
+            // Find highest grade
+            const highestGrade = grades.reduce((highest, grade) => 
+                grade.gradePoints > highest.gradePoints ? grade : highest
+            );
+
+            // Calculate trend (compare last 2 semesters if available)
+            const semesters = [...new Set(grades.map(g => g.semester))].sort();
+            let trend = '-';
+            if (semesters.length >= 2) {
+                const lastSemester = semesters[semesters.length - 1];
+                const prevSemester = semesters[semesters.length - 2];
+                
+                const lastGrades = grades.filter(g => g.semester === lastSemester);
+                const prevGrades = grades.filter(g => g.semester === prevSemester);
+                
+                const lastGPA = calculateSemesterGPA(lastGrades);
+                const prevGPA = calculateSemesterGPA(prevGrades);
+                
+                if (lastGPA > prevGPA) trend = '📈 Improving';
+                else if (lastGPA < prevGPA) trend = '📉 Declining';
+                else trend = '➡️ Stable';
+            }
+
+            // Update stats display
+            document.getElementById('analyticsGPA').textContent = cgpa.toFixed(2);
+            document.getElementById('analyticsCredits').textContent = totalCredits;
+            document.getElementById('analyticsHighest').textContent = highestGrade.grade;
+            document.getElementById('analyticsTrend').textContent = trend;
+
+            // Load grade distribution
+            loadGradeDistribution(grades);
+            
+            // Load semester performance
+            loadSemesterPerformance(grades);
+        }
+
+        function calculateSemesterGPA(semesterGrades) {
+            const totalPoints = semesterGrades.reduce((sum, grade) => sum + (grade.gradePoints * grade.creditHours), 0);
+            const totalCredits = semesterGrades.reduce((sum, grade) => sum + grade.creditHours, 0);
+            return totalCredits > 0 ? (totalPoints / totalCredits) : 0;
+        }
+
+        function loadGradeDistribution(grades) {
+            const distribution = {};
+            const gradeOrder = ['A+', 'A', 'A-', 'B+', 'B', 'B-', 'C+', 'C', 'C-', 'D+', 'D', 'F'];
+            
+            // Initialize distribution
+            gradeOrder.forEach(grade => distribution[grade] = 0);
+            
+            // Count grades
+            grades.forEach(grade => {
+                distribution[grade.grade]++;
+            });
+
+            const total = grades.length;
+            const container = document.getElementById('gradeDistribution');
+            
+            container.innerHTML = gradeOrder.map(grade => {
+                const count = distribution[grade];
+                const percentage = total > 0 ? (count / total * 100) : 0;
+                
+                const gradeColors = {
+                    'A+': 'bg-green-500', 'A': 'bg-green-500', 'A-': 'bg-green-500',
+                    'B+': 'bg-blue-500', 'B': 'bg-blue-500', 'B-': 'bg-blue-500',
+                    'C+': 'bg-yellow-500', 'C': 'bg-yellow-500', 'C-': 'bg-yellow-500',
+                    'D+': 'bg-orange-500', 'D': 'bg-orange-500', 'F': 'bg-red-500'
+                };
+                
+                return `
+                    <div class="flex items-center justify-between py-2">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-3 h-3 rounded-full ${gradeColors[grade]}"></div>
+                            <span class="text-white font-medium">${grade}</span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <div class="w-24 bg-gray-700 rounded-full h-2">
+                                <div class="${gradeColors[grade]} h-2 rounded-full transition-all duration-500" 
+                                     style="width: ${percentage}%"></div>
+                            </div>
+                            <span class="text-gray-400 text-sm w-12 text-right">${count} (${percentage.toFixed(0)}%)</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function loadSemesterPerformance(grades) {
+            const semesters = [...new Set(grades.map(g => g.semester))].sort();
+            const container = document.getElementById('semesterPerformance');
+            
+            const semesterData = semesters.map(semester => {
+                const semesterGrades = grades.filter(g => g.semester === semester);
+                const gpa = calculateSemesterGPA(semesterGrades);
+                const credits = semesterGrades.reduce((sum, grade) => sum + grade.creditHours, 0);
+                
+                return { semester, gpa, credits, courses: semesterGrades.length };
+            });
+
+            container.innerHTML = semesterData.map(data => `
+                <div class="bg-white/5 rounded-lg p-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <h4 class="font-semibold text-white">${data.semester}</h4>
+                        <span class="text-lg font-bold text-nexora-orange">${data.gpa.toFixed(2)}</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <span class="text-gray-400">Courses:</span>
+                            <span class="text-white ml-2">${data.courses}</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-400">Credits:</span>
+                            <span class="text-white ml-2">${data.credits}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        /**
+         * Utility Functions
+         */
+        function getTimeAgo(dateString) {
+            const now = new Date();
+            const date = new Date(dateString);
+            const diffInSeconds = Math.floor((now - date) / 1000);
+
+            if (diffInSeconds < 60) return 'just now';
+            if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+            if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+            if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)}d ago`;
+            return `${Math.floor(diffInSeconds / 2592000)}mo ago`;
+        }
+
+        function exportGrades() {
+            const grades = getGrades().filter(g => g.userId === currentUser.id);
+            
+            if (grades.length === 0) {
+                showToast('No grades to export', 'error');
+                return;
+            }
+
+            // Calculate CGPA
+            const totalPoints = grades.reduce((sum, grade) => sum + (grade.gradePoints * grade.creditHours), 0);
+            const totalCredits = grades.reduce((sum, grade) => sum + grade.creditHours, 0);
+            const cgpa = totalCredits > 0 ? (totalPoints / totalCredits) : 0;
+
+            // Create export data
+            const exportData = {
+                student: {
+                    name: currentUser.name,
+                    studentId: currentUser.studentId,
+                    department: currentUser.department,
+                    exportDate: new Date().toISOString()
+                },
+                summary: {
+                    cgpa: cgpa.toFixed(2),
+                    totalCredits: totalCredits,
+                    totalCourses: grades.length,
+                    semesters: [...new Set(grades.map(g => g.semester))].length
+                },
+                grades: grades.map(grade => ({
+                    courseName: grade.courseName,
+                    courseCode: grade.courseCode,
+                    creditHours: grade.creditHours,
+                    grade: grade.grade,
+                    gradePoints: grade.gradePoints,
+                    semester: grade.semester
+                }))
+            };
+
+            // Create and download file
+            const dataStr = JSON.stringify(exportData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `nexora-cgpa-${currentUser.studentId}-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            showToast('Grades exported successfully!');
+        }
+
+        /**
+         * Modal Functions
+         */
+        function showConfirmModal(title, message, callback) {
+            document.getElementById('confirmTitle').textContent = title;
+            document.getElementById('confirmMessage').textContent = message;
+            document.getElementById('confirmModal').classList.remove('hidden');
+            confirmCallback = callback;
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirmModal').classList.add('hidden');
+            confirmCallback = null;
+        }
+
+        // Confirm button click handler
+        document.getElementById('confirmBtn').addEventListener('click', function() {
+            if (confirmCallback) {
+                confirmCallback();
+                closeConfirmModal();
             }
         });
 
-        // Initialize display
-        updateDisplay();
+        // Close modal on outside click
+        document.getElementById('confirmModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeConfirmModal();
+            }
+        });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97b0b6299388ef1b',t:'MTc1NzE5MDQ5My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97da2c82413c243d',t:'MTc1NzYyNTI1Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
